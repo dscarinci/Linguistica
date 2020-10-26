@@ -128,9 +128,8 @@ def get_verb_crea_frequency(verb, country=9):
             frequency_dict[verb_conjug] = (0, 0)
 
         frequency_df = pd.DataFrame(frequency_dict)
+        # make sure all columns have the same order
         frequency_df = frequency_df.reindex(columns=sorted(frequency_df.columns))
         frequency_df['verb'] = verb
         frequency_df['type'] = ['token', 'document']
     return frequency_df
-
-
