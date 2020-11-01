@@ -48,7 +48,8 @@ def make_conjug_dict(verb):
             'futuro':[],
             'condicional':[],
             'presente subj': [],
-            'imperfecto subj': []
+            'imperfecto subj': [],
+            'presente durativo': []
             }
     
     # positions of verb forms of interest relative
@@ -84,6 +85,12 @@ def make_conjug_dict(verb):
         form = aux + ' ' + conjug['participio'][0]
         conjug['pretérito pluscuam'].append(form)
 
+    # presente continuo: estar + gerundio
+    auxiliares = ['estoy', 'estás', 'está', 'estamos', 'estáis', 'están']
+    for aux in auxiliares:
+        form = aux + ' ' + conjug['gerundio'][0]
+        conjug['presente durativo'].append(form)
+
     return conjug
     
 def get_verb_crea_frequency(verb, country=9):
@@ -101,7 +108,8 @@ def get_verb_crea_frequency(verb, country=9):
         forms = list(set(conjug[verb_conjug])) # remove duplicate forms
 
         # Create uppercase versions. Add quotes in compound verbs.
-        if verb_conjug in ['pretérito perf', 'pretérito pluscuam']:
+        if verb_conjug in ['pretérito perf', 'pretérito pluscuam',\
+                            'presente durativo']:
             lowercase = ["'" + word + "'" for word in forms]
             capitals = ["'" + word.capitalize() + "'" \
                     for word in forms]
