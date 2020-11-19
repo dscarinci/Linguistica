@@ -1,6 +1,7 @@
+import re
 from urllib import parse, request
 
-def crea_query(busqueda, autor="", titulo="", ano1="", ano2="", 
+def crea_query(texto, autor="", titulo="", ano1="", ano2="", 
                medio=1000, pais=1000, tema=1000, destino=1):
     """
     Destino:
@@ -38,20 +39,75 @@ def crea_query(busqueda, autor="", titulo="", ano1="", ano2="",
         3  Miscelánea
         4  Oral
         1000 Todos
-
+    Tema:
+        Check online / comprobar en línea
+    
+    Returns number of occurrences and documents
     """
     
     url = ("http://corpus.rae.es/cgi-bin/crpsrvEx.dll?"
            "MfcISAPICommand=buscar&tradQuery=1&")
-    params = {'destino': destino,
-              'texto': busqueda,
-              'autor': autor,
-              'titulo': titulo,
-              'ano1': ano1,
-              'ano2': ano2,
-              'medio': medio,
-              'pais': pais,
-              'tema': tema
-             }
+    query = ""
+    # add params in order
+    # Corpus ------
+    if destino in [0,1]:
+        query += "destino={}&".format(destino)
+    else:
+        raise Exception("Valores válidos para destino: "
+                        "0: CREA, 1: CORDE")
+    # Query -----
+    query += "texto={}&".format(texto)
+    # Author -----
+    query += "autor={}&".format(autor)
+    # Title -----
+    query += "titulo={}&".format(titulo)
+    # Beginning year
+    query += "ano1={}&".format(ano1)
+    # End year -----
+    query += "ano2={}&".format(ano2)
+    # Means -----
+    if  isinstance(medio, int):
+        query += "medio={}&".format(medio)
+    elif isinstance(medio, list):
+        for m in medio:
+            query += "medio={}&".format(m)
+    else:
+        raise Exception("Valores válidos para Medio:"
+                       "entero o lista de enteros")
+    # Country -----
+    if  isinstance(pais, int):
+        query += "pais={}&".format(pais)
+    elif isinstance(pais, list):
+        for p in pais:
+            query += "pais={}&".format(p)
+    else:
+        raise Exception("Valores válidos para Pais:"
+                       "entero o lista de enteros")
+   # Tema -----
+    if  isinstance(tema, int):
+        query += "tema={}&".format(tema)
+    elif isinstance(pais, list):
+        for t in tema:
+            query += "tema={}&".format(t)
+        query = query[:-1] # remove last &
+    else:
+        raise Exception("Valores válidos para Tema:"
+                       "entero o lista de enteros")
+    
+    # Parse query into valid format
+    query = parse.quote_plus(query, encoding='latin1', safe="=&")
+    url = url + query
+    print(url)
+    
+    # Make query
+    page = request.urlopen(url).read()
 
-#https://stackoverflow.com/questions/2506379/add-params-to-given-url-in-python
+    pattern = "([0-9]+) casos en ([0-9]+) documentos"
+    frequency_info = re.search(pattern, page.decode("latin1"))
+    if frequency_info:
+        return frequency_info.group(1), frequency_info.group(2)
+    else:
+        return 0, 0
+
+
+
